@@ -7,6 +7,8 @@ import br.com.fiap.clyvo.model.Pet;
 import br.com.fiap.clyvo.repository.EventoSaudeRepository;
 import br.com.fiap.clyvo.repository.PetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,37 +23,22 @@ public class EventoSaudeService {
 
     @Transactional
     public EventoSaudeResponseDTO cadastrarEvento(EventoSaudeRequestDTO dto) {
-        // 1. Busca o Pet no banco de dados
         Pet pet = petRepository.findById(dto.petId())
                 .orElseThrow(() -> new RuntimeException("Pet não encontrado com o ID: " + dto.petId()));
 
-        // 2. Cria o novo evento de saúde
         EventoSaude evento = new EventoSaude();
         evento.setPet(pet);
         evento.setTipoEvento(dto.tipoEvento());
         evento.setDescricao(dto.descricao());
         evento.setDataEvento(dto.dataEvento());
 
-        // 3. A Mágica do Health Score: Calcula o impacto
-        int scoreAtual = pet.getHealthScore();
-        int impacto = dto.tipoEvento().getImpactoScore();
-        int novoScore = scoreAtual + impacto;
+        int novoScore = dto.tipoEvento().calcularNovoScore(pet.getHealthScore());
 
-        // 4. Regras de limite (O score não pode ser maior que 100 nem menor que 0)
-        if (novoScore > 100) {
-            novoScore = 100;
-        } else if (novoScore < 0) {
-            novoScore = 0;
-        }
-
-        // 5. Atualiza o score do Pet e salva
         pet.setHealthScore(novoScore);
         petRepository.save(pet);
 
-        // 6. Salva o evento criado
         evento = repository.save(evento);
 
-        // 7. Retorna o DTO limpo e seguro com o novo score atualizado
         return new EventoSaudeResponseDTO(
                 evento.getId(),
                 pet.getId(),
@@ -60,5 +47,23 @@ public class EventoSaudeService {
                 evento.getDataEvento(),
                 pet.getHealthScore()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EventoSaudeResponseDTO> buscarEventosPorPet(Long petId, Pageable paginacao) {
+        if (!petRepository.existsById(petId)) {
+            throw new RuntimeException("Pet não encontrado com o ID: " + petId);
+        }
+
+        Page<EventoSaude> eventos = repository.findByPetIdOrderByDataEventoDesc(petId, paginacao);
+
+        return eventos.map(evento -> new EventoSaudeResponseDTO(
+                evento.getId(),
+                evento.getPet().getId(),
+                evento.getTipoEvento(),
+                evento.getDescricao(),
+                evento.getDataEvento(),
+                evento.getPet().getHealthScore()
+        ));
     }
 }

@@ -2,6 +2,8 @@ package br.com.fiap.clyvo.model;
 
 import br.com.fiap.clyvo.model.enums.TipoEvento;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -12,27 +14,27 @@ public class EventoSaude {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relacionamento: Vários eventos pertencem a um Pet
+    @NotNull(message = "O pet associado é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
-    // Salva o nome do Enum (ex: "VACINA", "ACIDENTE") no banco de dados
+    @NotNull(message = "O tipo de evento é obrigatório")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoEvento tipoEvento;
 
+    @NotBlank(message = "A descrição do evento é obrigatória")
     @Column(nullable = false, length = 255)
     private String descricao;
 
+    @NotNull(message = "A data do evento é obrigatória")
     @Column(nullable = false)
     private LocalDate dataEvento;
 
-    // Construtor padrão (Obrigatório para o Spring/JPA)
     public EventoSaude() {
     }
 
-    // Construtor completo
     public EventoSaude(Long id, Pet pet, TipoEvento tipoEvento, String descricao, LocalDate dataEvento) {
         this.id = id;
         this.pet = pet;
@@ -40,8 +42,6 @@ public class EventoSaude {
         this.descricao = descricao;
         this.dataEvento = dataEvento;
     }
-
-    // --- Getters e Setters ---
 
     public Long getId() {
         return id;

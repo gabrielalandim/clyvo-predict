@@ -28,9 +28,10 @@ public class PetController {
 
     @GetMapping
     public ResponseEntity<Page<PetResponseDTO>> listar(
+            @RequestParam(required = false) String nome,
             @ParameterObject @PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
 
-        Page<PetResponseDTO> page = service.listar(paginacao);
+        Page<PetResponseDTO> page = service.listar(nome, paginacao);
         return ResponseEntity.ok(page);
     }
 

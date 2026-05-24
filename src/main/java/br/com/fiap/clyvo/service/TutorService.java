@@ -9,6 +9,7 @@ import br.com.fiap.clyvo.repository.TutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,6 @@ public class TutorService {
 
     @Transactional
     public TutorResponseDTO cadastrar(TutorRequestDTO dto) {
-        // Validação de segurança: Impede que dois tutores usem o mesmo e-mail
         if (repository.findByEmail(dto.email()).isPresent()) {
             throw new RuntimeException("E-mail já cadastrado no sistema!");
         }
@@ -29,24 +29,24 @@ public class TutorService {
         tutor.setNome(dto.nome());
         tutor.setEmail(dto.email());
         tutor.setTelefone(dto.telefone());
-        tutor.setSenha(dto.senha()); // Salvando a senha do novo usuário
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        tutor.setSenha(encoder.encode(dto.senha()));
 
         tutor = repository.save(tutor);
 
         return new TutorResponseDTO(tutor.getId(), tutor.getNome(), tutor.getEmail(), tutor.getTelefone());
     }
 
-    // NOVO MÉTODO: Autenticação para o App Mobile
     public TutorAuthResponseDTO autenticar(TutorLoginRequestDTO dto) {
         Tutor tutor = repository.findByEmail(dto.email())
                 .orElseThrow(() -> new RuntimeException("E-mail ou senha inválidos."));
 
-        // Compara a senha enviada pelo app com a senha salva no banco
-        if (!tutor.getSenha().equals(dto.senha())) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (!encoder.matches(dto.senha(), tutor.getSenha())) {
             throw new RuntimeException("E-mail ou senha inválidos.");
         }
 
-        // Retorna apenas os dados essenciais e seguros (sem a senha)
         return new TutorAuthResponseDTO(tutor.getId(), tutor.getNome(), tutor.getEmail());
     }
 
@@ -67,11 +67,12 @@ public class TutorService {
         Tutor tutor = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tutor não encontrado com o ID: " + id));
 
-        // Atualizando também a senha caso o usuário queira mudar pelo perfil
         tutor.setNome(dto.nome());
         tutor.setEmail(dto.email());
         tutor.setTelefone(dto.telefone());
-        tutor.setSenha(dto.senha());
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        tutor.setSenha(encoder.encode(dto.senha()));
 
         tutor = repository.save(tutor);
 
