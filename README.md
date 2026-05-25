@@ -2,7 +2,7 @@
 
 # 🔮 Clyvo Predict
 
-**Microsserviço de Predição Inteligente — Challenge FIAP 2026**
+**Microsserviço de Predição de Saúde Animal — Challenge FIAP 2026**
 
 [![Java](https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -10,7 +10,7 @@
 [![Maven](https://img.shields.io/badge/Maven-Build-blue?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 [![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
 
-> Serviço backend desenvolvido como parte do **Challenge FIAP 2026** em parceria com a startup **Clyvo** — plataforma voltada à análise preditiva e inteligência de dados para decisões estratégicas de negócio.
+> Serviço backend desenvolvido como parte do **Challenge FIAP 2026** em parceria com a startup **Clyvo** — plataforma voltada à análise preditiva da saúde de pets, auxiliando tutores a acompanhar o histórico clínico de seus animais por meio de um **Health Score dinâmico**.
 
 </div>
 
@@ -19,34 +19,43 @@
 ## 📋 Índice
 
 - [Sobre o Projeto](#-sobre-o-projeto)
+- [Funcionalidades](#-funcionalidades)
 - [Arquitetura e Tecnologias](#-arquitetura-e-tecnologias)
+- [Modelo de Domínio](#-modelo-de-domínio)
+- [Endpoints da API](#-endpoints-da-api)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Pré-requisitos](#-pré-requisitos)
 - [Configuração e Instalação](#-configuração-e-instalação)
 - [Executando a Aplicação](#-executando-a-aplicação)
 - [Documentação da API](#-documentação-da-api)
-- [Variáveis de Ambiente](#-variáveis-de-ambiente)
+- [Design Patterns](#-design-patterns)
 - [Testes](#-testes)
 - [Time](#-time)
-- [Licença](#-licença)
 
 ---
 
 ## 🎯 Sobre o Projeto
 
-O **Clyvo Predict** é o núcleo de backend da solução desenvolvida no **Challenge 2026 da FIAP** em parceria com a startup **Clyvo**. O serviço é responsável por expor uma API RESTful que alimenta modelos preditivos, processa e persiste dados analíticos, e serve como base para a tomada de decisão inteligente dentro da plataforma Clyvo.
+O **Clyvo Predict** é o núcleo de backend da solução desenvolvida no **Challenge 2026 da FIAP** em parceria com a startup **Clyvo**. O serviço expõe uma **API RESTful** que permite o cadastro de tutores e seus pets, o registro de eventos de saúde (consultas, vacinas, doenças, cirurgias) e o cálculo automático de um **Health Score** — uma pontuação dinâmica que reflete a condição de saúde de cada animal ao longo do tempo.
 
 ### Contexto do Desafio
 
-O Challenge FIAP é um projeto interdisciplinar onde equipes de estudantes trabalham diretamente com empresas reais para desenvolver soluções tecnológicas com impacto no mercado. A **Clyvo** propôs o desafio de criar um serviço de predição capaz de processar dados e entregar insights relevantes de forma escalável e documentada.
+O Challenge FIAP é um projeto interdisciplinar onde equipes de estudantes trabalham diretamente com empresas reais para desenvolver soluções tecnológicas com impacto no mercado. A **Clyvo** propôs o desafio de criar um serviço preditivo capaz de processar dados clínicos de pets e entregar insights relevantes de forma escalável, segura e documentada.
 
-### Funcionalidades Principais
+---
 
-- 📊 **Ingestão e persistência** de dados preditivos via API REST
-- ✅ **Validação robusta** de entrada com Bean Validation
-- 🗄️ **Integração com Oracle Database** via JPA/Hibernate
-- 📖 **Documentação interativa** da API com Swagger UI
-- 🔁 **Hot reload** em desenvolvimento com Spring DevTools
+## ✨ Funcionalidades
+
+- 🐾 **Gestão de Pets** — cadastro, consulta, atualização e remoção de animais
+- 👤 **Gestão de Tutores** — cadastro com senha criptografada (BCrypt) e autenticação por e-mail
+- 📋 **Registro de Eventos de Saúde** — vacinas, consultas, exames, doenças e acidentes
+- 💚 **Health Score dinâmico** — pontuação calculada automaticamente a cada evento (0 a 100)
+- 🔍 **Busca com parâmetros** — filtro de pets por nome
+- 📄 **Paginação e ordenação** — todos os endpoints de listagem suportam paginação
+- ⚡ **Cache de listagem** — otimização de consultas frequentes com Spring Cache
+- ✅ **Validação de dados** — Bean Validation em todos os campos de entrada
+- 🔒 **Segurança de senha** — hash BCrypt no cadastro e validação no login
+- 📖 **Documentação interativa** — Swagger UI gerado automaticamente
 
 ---
 
@@ -60,29 +69,106 @@ O Challenge FIAP é um projeto interdisciplinar onde equipes de estudantes traba
 | **Spring Boot** | 3.5 | Framework de aplicação |
 | **Spring Data JPA** | — | Abstração de persistência ORM |
 | **Spring Web** | — | Camada REST (controllers, DTOs) |
-| **Spring Validation** | — | Validação declarativa de entidades |
+| **Spring Validation** | — | Bean Validation nos DTOs e entidades |
+| **Spring Cache** | — | Cache em memória para otimização |
+| **Spring Security Crypto** | — | Criptografia BCrypt de senhas |
 | **Oracle JDBC (ojdbc11)** | — | Driver de conexão com o banco Oracle |
-| **Lombok** | — | Redução de boilerplate (getters, setters, builders) |
+| **Lombok** | — | Redução de boilerplate |
 | **Springdoc OpenAPI** | 2.8 | Geração automática do Swagger UI |
 | **Spring DevTools** | — | Reload automático em desenvolvimento |
-| **Spring Boot Test** | — | Suporte a testes unitários e de integração |
 | **Maven** | Wrapper | Gerenciamento de build e dependências |
 
 ### Padrão Arquitetural
 
-A aplicação segue o padrão de **arquitetura em camadas (Layered Architecture)** típico de aplicações Spring Boot:
+A aplicação segue o padrão de **arquitetura em camadas (Layered Architecture)**:
 
 ```
-┌──────────────────────────────────────┐
-│           Controller Layer           │  ← REST Endpoints (@RestController)
-├──────────────────────────────────────┤
-│            Service Layer             │  ← Regras de negócio (@Service)
-├──────────────────────────────────────┤
-│          Repository Layer            │  ← Acesso a dados (Spring Data JPA)
-├──────────────────────────────────────┤
-│           Database (Oracle)          │  ← Persistência
-└──────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│              Controller Layer                │  ← REST Endpoints (@RestController)
+│     TutorController  PetController           │
+│     EventoSaudeController                    │
+├──────────────────────────────────────────────┤
+│               Service Layer                  │  ← Regras de negócio (@Service)
+│     TutorService  PetService                 │
+│     EventoSaudeService                       │
+├──────────────────────────────────────────────┤
+│             Repository Layer                 │  ← Acesso a dados (Spring Data JPA)
+│     TutorRepository  PetRepository           │
+│     EventoSaudeRepository                    │
+├──────────────────────────────────────────────┤
+│              Model Layer                     │  ← Entidades JPA + Enum
+│     Tutor  Pet  EventoSaude  TipoEvento      │
+├──────────────────────────────────────────────┤
+│           Database (Oracle DB)               │  ← Persistência
+│     TB_TUTOR  TB_PET  TB_EVENTO_SAUDE        │
+└──────────────────────────────────────────────┘
 ```
+
+---
+
+## 🗂️ Modelo de Domínio
+
+### Entidades e Relacionamentos
+
+```
+Tutor (1) ──────────── (N) Pet (1) ──────────── (N) EventoSaude
+  - id                       - id                      - id
+  - nome                     - nome                    - tipoEvento (Enum)
+  - email (unique)           - especie                 - descricao
+  - telefone                 - raca                    - dataEvento
+  - senha (BCrypt)           - idade                   - pet (FK)
+                             - peso
+                             - healthScore (0-100)
+                             - tutor (FK)
+```
+
+### Health Score — Como funciona
+
+O **Health Score** é uma pontuação de 0 a 100 que reflete a condição de saúde do pet. Cada evento registrado impacta automaticamente essa pontuação:
+
+| Tipo de Evento | Impacto no Score |
+|---|---|
+| `VACINA` | +10 |
+| `CONSULTA_ROTINA` | +5 |
+| `EXAME` | +5 |
+| `DOENCA_LEVE` | -15 |
+| `CIRURGIA` | -30 |
+| `DOENCA_GRAVE` | -40 |
+| `ACIDENTE` | -50 |
+
+> Todo pet inicia com **Health Score = 100** e o valor é mantido sempre entre **0 e 100**.
+
+---
+
+## 🌐 Endpoints da API
+
+### Tutores — `/api/tutores`
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `POST` | `/api/tutores` | Cadastrar novo tutor |
+| `POST` | `/api/tutores/login` | Autenticar tutor |
+| `GET` | `/api/tutores` | Listar tutores (paginado) |
+| `GET` | `/api/tutores/{id}` | Buscar tutor por ID |
+| `PUT` | `/api/tutores/{id}` | Atualizar tutor |
+| `DELETE` | `/api/tutores/{id}` | Remover tutor |
+
+### Pets — `/api/pets`
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `POST` | `/api/pets` | Cadastrar novo pet |
+| `GET` | `/api/pets` | Listar pets (paginado, filtrável por `?nome=`) |
+| `GET` | `/api/pets/{id}` | Buscar pet por ID |
+| `PUT` | `/api/pets/{id}` | Atualizar pet |
+| `DELETE` | `/api/pets/{id}` | Remover pet |
+
+### Eventos de Saúde — `/api/eventos`
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `POST` | `/api/eventos` | Registrar evento e atualizar Health Score |
+| `GET` | `/api/eventos/pet/{petId}` | Listar eventos de um pet (paginado, ordenado por data) |
 
 ---
 
@@ -91,46 +177,58 @@ A aplicação segue o padrão de **arquitetura em camadas (Layered Architecture)
 ```
 clyvo-predict/
 │
-├── .mvn/wrapper/               # Maven Wrapper (mvnw / mvnw.cmd)
-│
 ├── src/
 │   ├── main/
-│   │   ├── java/
-│   │   │   └── br/com/fiap/clyvo/
-│   │   │       ├── controller/     # Controllers REST
-│   │   │       ├── service/        # Lógica de negócio
-│   │   │       ├── repository/     # Interfaces JPA
-│   │   │       ├── model/          # Entidades JPA
-│   │   │       ├── dto/            # Data Transfer Objects
-│   │   │       └── ClyvoApplication.java
+│   │   ├── java/br/com/fiap/clyvo/
+│   │   │   ├── controller/
+│   │   │   │   ├── TutorController.java
+│   │   │   │   ├── PetController.java
+│   │   │   │   └── EventoSaudeController.java
+│   │   │   ├── service/
+│   │   │   │   ├── TutorService.java
+│   │   │   │   ├── PetService.java
+│   │   │   │   └── EventoSaudeService.java
+│   │   │   ├── repository/
+│   │   │   │   ├── TutorRepository.java
+│   │   │   │   ├── PetRepository.java
+│   │   │   │   └── EventoSaudeRepository.java
+│   │   │   ├── model/
+│   │   │   │   ├── Tutor.java
+│   │   │   │   ├── Pet.java
+│   │   │   │   ├── EventoSaude.java
+│   │   │   │   └── enums/
+│   │   │   │       └── TipoEvento.java
+│   │   │   ├── dto/
+│   │   │   │   ├── TutorRequestDTO.java / TutorResponseDTO.java
+│   │   │   │   ├── TutorLoginRequestDTO.java / TutorAuthResponseDTO.java
+│   │   │   │   ├── PetRequestDTO.java / PetResponseDTO.java
+│   │   │   │   └── EventoSaudeRequestDTO.java / EventoSaudeResponseDTO.java
+│   │   │   ├── exception/
+│   │   │   │   ├── TratadorDeErros.java
+│   │   │   │   └── DadosErroValidacao.java
+│   │   │   └── ClyvoPredictApplication.java
 │   │   │
 │   │   └── resources/
-│   │       ├── application.properties   # Configurações gerais
-│   │       └── application-dev.properties
+│   │       └── application.properties
 │   │
 │   └── test/
-│       └── java/
-│           └── br/com/fiap/clyvo/      # Testes unitários e de integração
+│       └── java/br/com/fiap/clyvo/
+│           └── ClyvoPredictApplicationTests.java
 │
-├── .gitattributes
 ├── .gitignore
-├── mvnw                        # Maven Wrapper (Unix)
-├── mvnw.cmd                    # Maven Wrapper (Windows)
-└── pom.xml                     # Configuração do projeto Maven
+├── mvnw / mvnw.cmd
+└── pom.xml
 ```
 
 ---
 
 ## ✅ Pré-requisitos
 
-Antes de iniciar, certifique-se de ter instalado em sua máquina:
-
 - **[Java 17+](https://adoptium.net/)** — JDK (não apenas JRE)
-- **[Maven 3.8+](https://maven.apache.org/download.cgi)** — ou use o wrapper `./mvnw` incluído no projeto
-- **[Oracle Database](https://www.oracle.com/database/)** — instância local, Docker, ou acesso remoto
+- **[Maven 3.8+](https://maven.apache.org/download.cgi)** — ou use o wrapper `./mvnw` incluso
+- **Acesso ao Oracle DB** — instância local, Docker ou servidor remoto (FIAP: `oracle.fiap.com.br`)
 - **[Git](https://git-scm.com/)** — para clonar o repositório
-
-> 💡 **Dica:** Não tem Maven instalado? Sem problema. O projeto inclui o Maven Wrapper (`./mvnw`). Todos os comandos abaixo funcionam substituindo `mvn` por `./mvnw` (Linux/Mac) ou `mvnw.cmd` (Windows).
+- **[Postman](https://www.postman.com/) ou [Insomnia](https://insomnia.rest/)** — para testar os endpoints (collection disponível em `/documentos`)
 
 ---
 
@@ -139,29 +237,28 @@ Antes de iniciar, certifique-se de ter instalado em sua máquina:
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/gabrielalandim/clyvo-predict.git
+git clone https://github.com/seu-usuario/clyvo-predict.git
 cd clyvo-predict
 ```
 
 ### 2. Configure o banco de dados
 
-Edite o arquivo `src/main/resources/application.properties` com as credenciais da sua instância Oracle:
+Edite `src/main/resources/application.properties`:
 
 ```properties
-# Datasource
-spring.datasource.url=jdbc:oracle:thin:@localhost:1521:XE
-spring.datasource.username=SEU_USUARIO
+spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl
+spring.datasource.username=SEU_RM
 spring.datasource.password=SUA_SENHA
 spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
 
-# JPA / Hibernate
 spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
-spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
-```
 
-> ⚠️ **Atenção:** Nunca commite credenciais reais no repositório. Use variáveis de ambiente (ver seção [Variáveis de Ambiente](#-variáveis-de-ambiente)).
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.api-docs.path=/v3/api-docs
+```
 
 ### 3. Instale as dependências
 
@@ -173,110 +270,83 @@ spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
 
 ## ▶️ Executando a Aplicação
 
-### Modo desenvolvimento (com hot reload)
-
 ```bash
+# Modo desenvolvimento
 ./mvnw spring-boot:run
-```
 
-### Gerando o JAR e executando
-
-```bash
-# Build
+# Gerar JAR e executar
 ./mvnw clean package -DskipTests
-
-# Execução
 java -jar target/clyvo-predict-0.0.1-SNAPSHOT.jar
 ```
 
-### Com variáveis de ambiente inline
-
-```bash
-DB_URL=jdbc:oracle:thin:@localhost:1521:XE \
-DB_USER=clyvo \
-DB_PASS=senha123 \
-./mvnw spring-boot:run
-```
-
-A aplicação estará disponível em:
-
-```
-http://localhost:8080
-```
+A aplicação sobe em: **http://localhost:8080**
 
 ---
 
 ## 📖 Documentação da API
 
-O projeto utiliza **Springdoc OpenAPI 2.8** para geração automática da documentação interativa.
-
-Após subir a aplicação, acesse:
-
 | Interface | URL |
 |---|---|
-| **Swagger UI** | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) |
-| **OpenAPI JSON** | [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs) |
-| **OpenAPI YAML** | [http://localhost:8080/v3/api-docs.yaml](http://localhost:8080/v3/api-docs.yaml) |
+| **Swagger UI** | http://localhost:8080/swagger-ui.html |
+| **OpenAPI JSON** | http://localhost:8080/v3/api-docs |
 
-> O Swagger UI permite testar todos os endpoints diretamente pelo navegador, sem necessidade de ferramentas externas como Postman.
+> A collection do Postman com todos os endpoints testados está disponível na pasta `/documentos` do repositório.
 
 ---
 
-## 🔐 Variáveis de Ambiente
+## 🧩 Design Patterns
 
-Para evitar expor credenciais no código-fonte, configure as seguintes variáveis de ambiente:
+### Strategy Pattern — `TipoEvento`
 
-| Variável | Descrição | Exemplo |
-|---|---|---|
-| `DB_URL` | URL de conexão JDBC com o Oracle | `jdbc:oracle:thin:@localhost:1521:XE` |
-| `DB_USER` | Usuário do banco de dados | `clyvo_user` |
-| `DB_PASS` | Senha do banco de dados | `senha_secreta` |
-| `SERVER_PORT` | Porta da aplicação (padrão: 8080) | `8080` |
+O cálculo do Health Score utiliza o padrão **Strategy** embutido no enum `TipoEvento`. Cada tipo de evento encapsula seu próprio impacto e a lógica de cálculo, eliminando condicionais espalhadas pelo código:
 
-No `application.properties`, referencie as variáveis assim:
+```java
+public enum TipoEvento {
+    VACINA(+10), CONSULTA_ROTINA(+5), EXAME(+5),
+    DOENCA_LEVE(-15), CIRURGIA(-30), DOENCA_GRAVE(-40), ACIDENTE(-50);
 
-```properties
-spring.datasource.url=${DB_URL}
-spring.datasource.username=${DB_USER}
-spring.datasource.password=${DB_PASS}
-server.port=${SERVER_PORT:8080}
+    private final int impactoScore;
+
+    public int calcularNovoScore(int scoreAtual) {
+        int novoScore = scoreAtual + this.impactoScore;
+        return Math.max(0, Math.min(100, novoScore));
+    }
+}
 ```
+
+### Cache Pattern — `PetService`
+
+A listagem de pets utiliza `@Cacheable` para evitar consultas desnecessárias ao banco. O cache é invalidado automaticamente a cada cadastro, atualização ou remoção via `@CacheEvict`.
 
 ---
 
 ## 🧪 Testes
 
-### Executar todos os testes
-
 ```bash
+# Executar todos os testes
 ./mvnw test
-```
 
-### Executar com relatório de cobertura
-
-```bash
+# Com relatório
 ./mvnw verify
 ```
 
-Os relatórios de teste ficam disponíveis em `target/surefire-reports/`.
+Os relatórios ficam em `target/surefire-reports/`.
+
+A collection do Postman com os testes de todos os endpoints está disponível em `/documentos/clyvo-predict-collection.json`.
 
 ---
 
 ## 👥 Time
 
-Desenvolvido por estudantes da **FIAP** como parte do **Challenge 2026** em parceria com a startup **Clyvo**.
+Desenvolvido por estudantes da **FIAP** — Challenge 2026 × **Clyvo**.
 
-| Nome | GitHub |
+| Nome | RM |
 |---|---|
-| Maria Gabriela Landim Severo | [@gabrielalandim](https://github.com/gabrielalandim) |
-
-> 📌 Projeto acadêmico desenvolvido no contexto do **Challenge FIAP 2026 — Clyvo**.
-
----
-
-## 📄 Licença
-
-Este projeto foi desenvolvido para fins acadêmicos no contexto do **Challenge FIAP 2026**. Todos os direitos reservados aos seus autores.
+| Maria Gabriela Landim Severo | RM565146 |
+| Eduarda Weiss Ventura | RM564434 |
+| Samara Porto Souza | RM559072 |
+| Lucas Nunes Soares | RM566503 |
+| Camilly Vitoria Pereira Maciel | RM566520 |
 
 ---
 
