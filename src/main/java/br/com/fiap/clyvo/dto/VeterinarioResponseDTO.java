@@ -1,9 +1,9 @@
 package br.com.fiap.clyvo.dto;
 
-public record TutorAuthResponseDTO(
+public record VeterinarioResponseDTO(
         Long id,
         String nome,
         String email,
-        String perfil,
-        String token
-) {}
+        String crmv
+) {
+}
