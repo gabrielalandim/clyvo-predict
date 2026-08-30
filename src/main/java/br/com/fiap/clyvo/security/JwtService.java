@@ -22,7 +22,7 @@ public class JwtService {
         Instant agora = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("clyvovet")
+                .issuer("clyvopredict")
                 .issuedAt(agora)
                 .expiresAt(agora.plusSeconds(3600))
                 .subject(user.getUsername())

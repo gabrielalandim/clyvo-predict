@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class EventoSaudeService {
@@ -21,6 +22,7 @@ public class EventoSaudeService {
     @Autowired
     private PetRepository petRepository;
 
+    @CacheEvict(value = "listaDePets", allEntries = true)
     @Transactional
     public EventoSaudeResponseDTO cadastrarEvento(EventoSaudeRequestDTO dto) {
         Pet pet = petRepository.findById(dto.petId())
