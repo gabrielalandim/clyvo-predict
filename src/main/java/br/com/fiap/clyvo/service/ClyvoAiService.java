@@ -7,6 +7,10 @@ import br.com.fiap.clyvo.dto.ia.PetRegistrationAiResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -44,6 +48,14 @@ public class ClyvoAiService {
             MultipartFile imagem
     ) throws IOException {
 
+        if (imagem.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma imagem não vazia.");
+        }
+        String contentType = imagem.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "O arquivo deve ser uma imagem.");
+        }
+
         ByteArrayResource resource = new ByteArrayResource(
                 imagem.getBytes()
         ) {
@@ -56,7 +68,9 @@ public class ClyvoAiService {
         MultiValueMap<String, Object> body =
                 new LinkedMultiValueMap<>();
 
-        body.add("imagem", resource);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(contentType));
+        body.add("imagem", new HttpEntity<>(resource, headers));
 
         return restClient
                 .post()
