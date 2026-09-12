@@ -247,8 +247,8 @@ Edite `src/main/resources/application.properties`:
 
 ```properties
 spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl
-spring.datasource.username=SEU_RM
-spring.datasource.password=SUA_SENHA
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
 
 spring.jpa.hibernate.ddl-auto=update
@@ -259,6 +259,19 @@ spring.jpa.properties.hibernate.format_sql=true
 springdoc.swagger-ui.path=/swagger-ui.html
 springdoc.api-docs.path=/v3/api-docs
 ```
+
+Defina `DB_USERNAME` e `DB_PASSWORD` nas variáveis de ambiente da configuração de execução da sua IDE ou no terminal que iniciará o Java. Use suas credenciais reais apenas nesse ambiente, sem salvá-las no repositório.
+
+No PowerShell, você pode informar as credenciais sem colocar a senha no histórico de comandos:
+
+```powershell
+$env:DB_USERNAME = Read-Host 'Usuário Oracle'
+$dbCredential = Get-Credential -UserName $env:DB_USERNAME -Message 'Informe a senha Oracle'
+$env:DB_PASSWORD = $dbCredential.GetNetworkCredential().Password
+Remove-Variable dbCredential
+```
+
+Execute os comandos Maven nesse mesmo terminal. As variáveis precisam ser configuradas novamente em novos terminais. Um arquivo `.env` não é carregado automaticamente por esta configuração do Spring Boot.
 
 ### 3. Instale as dependências
 
