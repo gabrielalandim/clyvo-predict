@@ -237,7 +237,7 @@ clyvo-predict/
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/clyvo-predict.git
+git clone https://github.com/gabrielalandim/clyvo-predict.git
 cd clyvo-predict
 ```
 
@@ -280,6 +280,50 @@ java -jar target/clyvo-predict-0.0.1-SNAPSHOT.jar
 ```
 
 A aplicação sobe em: **http://localhost:8080**
+
+### Executando a interface mobile com Expo
+
+O aplicativo mobile consome esta API Java e está disponível no repositório:
+**[Clyvo Predict Mobile - Sprint 3](https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3)**.
+
+**Pré-requisitos:** Node.js e npm instalados, Expo Go no celular Android ou iOS (compatível com o SDK do projeto), backend Java em execução e banco Oracle configurado e acessível.
+
+1. Mantenha o backend Java rodando na porta `8080`. No Windows, você pode iniciá-lo na pasta `clyvo-predict` com:
+
+   ```powershell
+   .\mvnw.cmd spring-boot:run
+   ```
+
+2. Em outro terminal, clone o aplicativo e instale suas dependências:
+
+   ```bash
+   git clone https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3.git
+   cd clyvo-predict-mobile-sprint3
+   npm install
+   ```
+
+3. No projeto mobile, edite `src/config/env.ts` e configure `API_HOST` com o IPv4 do computador que executa o Java. No Windows, consulte esse endereço com `ipconfig`, usando o adaptador Ethernet ou Wi-Fi da sua rede:
+
+   ```typescript
+   const API_HOST = '192.168.0.10'; // Exemplo: substitua pelo IPv4 do seu computador.
+   const API_PORT = 8080;
+   ```
+
+   Para celular físico, conecte o celular à mesma rede local do computador. Não use `localhost` no celular, pois ele aponta para o próprio aparelho. No emulador Android padrão do Android Studio, use `10.0.2.2` para acessar o backend executado no computador.
+
+4. Inicie o Expo:
+
+   ```bash
+   npx expo start
+   ```
+
+5. Abra o Expo Go no Android e escaneie o QR Code exibido no terminal. No iPhone, escaneie com a câmera. Para usar um emulador Android já iniciado, pressione `a` no terminal do Expo.
+
+6. Na aplicação, crie uma conta de tutor ou faça login com uma conta existente. Em seguida, acesse o cadastro de pets e o registro e consulta de eventos de saúde.
+
+**Cadastro com foto e IA:** esse recurso também exige o serviço Python em execução no endereço definido por `clyvo.ai.url` no backend Java (por padrão, `http://localhost:5000`). O mobile chama o Java, que encaminha a análise ao Python. Consulte as instruções do serviço de IA para configurar suas dependências e iniciá-lo antes de testar esse fluxo.
+
+**Se o app não conectar à API:** confirme o IP em `src/config/env.ts`, recarregue o aplicativo após alterá-lo e abra `http://IP_DO_COMPUTADOR:8080/swagger-ui.html` no navegador do celular. Se a página não abrir, confira se o Java está rodando, se os dispositivos estão na mesma rede e se o firewall permite o acesso à porta `8080` na rede privada. O túnel do Expo, quando utilizado, não disponibiliza automaticamente a API Java ao celular.
 
 ---
 
