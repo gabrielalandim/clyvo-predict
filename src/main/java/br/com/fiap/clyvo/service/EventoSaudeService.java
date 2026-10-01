@@ -6,7 +6,6 @@ import br.com.fiap.clyvo.model.EventoSaude;
 import br.com.fiap.clyvo.model.Pet;
 import br.com.fiap.clyvo.repository.EventoSaudeRepository;
 import br.com.fiap.clyvo.repository.PetRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,17 +15,39 @@ import org.springframework.cache.annotation.CacheEvict;
 @Service
 public class EventoSaudeService {
 
-    @Autowired
-    private EventoSaudeRepository repository;
+    private final EventoSaudeRepository repository;
+    private final PetRepository petRepository;
+    private final PetService petService; // NOVO - Sprint 4: reaproveita a regra de ownership
 
-    @Autowired
-    private PetRepository petRepository;
+    public EventoSaudeService(
+            EventoSaudeRepository repository,
+            PetRepository petRepository,
+            PetService petService
+    ) {
+        this.repository = repository;
+        this.petRepository = petRepository;
+        this.petService = petService;
+    }
 
+    // NOVO - Sprint 4: mapeamento unico (antes estava duplicado nos dois metodos)
+    private EventoSaudeResponseDTO toResponse(EventoSaude evento, Pet pet) {
+        return new EventoSaudeResponseDTO(
+                evento.getId(),
+                pet.getId(),
+                evento.getTipoEvento(),
+                evento.getDescricao(),
+                evento.getDataEvento(),
+                pet.getHealthScore()
+        );
+    }
+
+    // ALTERADO - Sprint 4: o pet agora e carregado pela regra de ownership.
+    // O calculo do Health Score, o Strategy do enum e o CacheEvict continuam iguais.
     @CacheEvict(value = "listaDePets", allEntries = true)
     @Transactional
     public EventoSaudeResponseDTO cadastrarEvento(EventoSaudeRequestDTO dto) {
-        Pet pet = petRepository.findById(dto.petId())
-                .orElseThrow(() -> new RuntimeException("Pet não encontrado com o ID: " + dto.petId()));
+
+        Pet pet = petService.buscarPetAutorizado(dto.petId());
 
         EventoSaude evento = new EventoSaude();
         evento.setPet(pet);
@@ -41,31 +62,18 @@ public class EventoSaudeService {
 
         evento = repository.save(evento);
 
-        return new EventoSaudeResponseDTO(
-                evento.getId(),
-                pet.getId(),
-                evento.getTipoEvento(),
-                evento.getDescricao(),
-                evento.getDataEvento(),
-                pet.getHealthScore()
-        );
+        return toResponse(evento, pet);
     }
 
+    // ALTERADO - Sprint 4: historico clinico so do pet que o usuario pode ver
     @Transactional(readOnly = true)
     public Page<EventoSaudeResponseDTO> buscarEventosPorPet(Long petId, Pageable paginacao) {
-        if (!petRepository.existsById(petId)) {
-            throw new RuntimeException("Pet não encontrado com o ID: " + petId);
-        }
 
-        Page<EventoSaude> eventos = repository.findByPetIdOrderByDataEventoDesc(petId, paginacao);
+        Pet pet = petService.buscarPetAutorizado(petId);
 
-        return eventos.map(evento -> new EventoSaudeResponseDTO(
-                evento.getId(),
-                evento.getPet().getId(),
-                evento.getTipoEvento(),
-                evento.getDescricao(),
-                evento.getDataEvento(),
-                evento.getPet().getHealthScore()
-        ));
+        Page<EventoSaude> eventos =
+                repository.findByPetIdOrderByDataEventoDesc(pet.getId(), paginacao);
+
+        return eventos.map(evento -> toResponse(evento, pet));
     }
 }

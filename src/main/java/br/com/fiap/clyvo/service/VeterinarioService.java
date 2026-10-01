@@ -4,24 +4,57 @@ import br.com.fiap.clyvo.dto.VeterinarioAuthResponseDTO;
 import br.com.fiap.clyvo.dto.VeterinarioLoginRequestDTO;
 import br.com.fiap.clyvo.dto.VeterinarioRequestDTO;
 import br.com.fiap.clyvo.dto.VeterinarioResponseDTO;
+import br.com.fiap.clyvo.exception.AcessoNegadoException;
+import br.com.fiap.clyvo.exception.RecursoNaoEncontradoException;
 import br.com.fiap.clyvo.model.Veterinario;
 import br.com.fiap.clyvo.repository.VeterinarioRepository;
 import br.com.fiap.clyvo.security.CustomUserDetails;
 import br.com.fiap.clyvo.security.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
+import br.com.fiap.clyvo.security.AuthUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VeterinarioService {
 
-    @Autowired
-    private VeterinarioRepository repository;
-    @Autowired
-    private JwtService jwtService;
+    private final VeterinarioRepository repository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;       // ALTERADO - Sprint 4
+    private final AuthUser authUser; // NOVO - Sprint 4
+
+    public VeterinarioService(
+            VeterinarioRepository repository,
+            JwtService jwtService,
+            PasswordEncoder passwordEncoder,
+            AuthUser authUser
+    ) {
+        this.repository = repository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.authUser = authUser;
+    }
+
+    // NOVO - Sprint 4: um veterinario so altera ou apaga a propria conta
+    private void validarEscritaDoVeterinario(Long id) {
+        if (!authUser.isVeterinario()
+                || !id.equals(authUser.getId())) {
+            throw new AcessoNegadoException(
+                    "Você só pode alterar a sua própria conta.");
+        }
+    }
+
+    // NOVO - Sprint 4: mapeamento unico
+    private VeterinarioResponseDTO toResponse(Veterinario veterinario) {
+        return new VeterinarioResponseDTO(
+                veterinario.getId(),
+                veterinario.getNome(),
+                veterinario.getEmail(),
+                veterinario.getCrmv()
+        );
+    }
 
     @Transactional
     public VeterinarioResponseDTO cadastrar(VeterinarioRequestDTO dto) {
@@ -39,18 +72,11 @@ public class VeterinarioService {
         veterinario.setNome(dto.nome());
         veterinario.setEmail(dto.email());
         veterinario.setCrmv(dto.crmv());
-
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        veterinario.setSenha(encoder.encode(dto.senha()));
+        veterinario.setSenha(passwordEncoder.encode(dto.senha()));
 
         veterinario = repository.save(veterinario);
 
-        return new VeterinarioResponseDTO(
-                veterinario.getId(),
-                veterinario.getNome(),
-                veterinario.getEmail(),
-                veterinario.getCrmv()
-        );
+        return toResponse(veterinario);
     }
 
     public VeterinarioAuthResponseDTO autenticar(VeterinarioLoginRequestDTO dto) {
@@ -58,9 +84,7 @@ public class VeterinarioService {
         Veterinario veterinario = repository.findByEmail(dto.email())
                 .orElseThrow(() -> new RuntimeException("E-mail ou senha inválidos."));
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-        if (!encoder.matches(dto.senha(), veterinario.getSenha())) {
+        if (!passwordEncoder.matches(dto.senha(), veterinario.getSenha())) {
             throw new RuntimeException("E-mail ou senha inválidos.");
         }
 
@@ -85,60 +109,50 @@ public class VeterinarioService {
     }
 
     public Page<VeterinarioResponseDTO> listar(Pageable paginacao) {
-
-        return repository.findAll(paginacao)
-                .map(veterinario -> new VeterinarioResponseDTO(
-                        veterinario.getId(),
-                        veterinario.getNome(),
-                        veterinario.getEmail(),
-                        veterinario.getCrmv()
-                ));
+        return repository.findAll(paginacao).map(this::toResponse);
     }
 
     public VeterinarioResponseDTO buscarPorId(Long id) {
 
         Veterinario veterinario = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Veterinário não encontrado com o ID: " + id));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Veterinário não encontrado com o ID: " + id));
 
-        return new VeterinarioResponseDTO(
-                veterinario.getId(),
-                veterinario.getNome(),
-                veterinario.getEmail(),
-                veterinario.getCrmv()
-        );
+        return toResponse(veterinario);
     }
 
+    // ALTERADO - Sprint 4: ownership + senha so muda se vier preenchida
     @Transactional
     public VeterinarioResponseDTO atualizar(Long id, VeterinarioRequestDTO dto) {
 
+        validarEscritaDoVeterinario(id);
+
         Veterinario veterinario = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Veterinário não encontrado com o ID: " + id));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Veterinário não encontrado com o ID: " + id));
 
         veterinario.setNome(dto.nome());
         veterinario.setEmail(dto.email());
         veterinario.setCrmv(dto.crmv());
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        veterinario.setSenha(encoder.encode(dto.senha()));
+        if (dto.senha() != null && !dto.senha().isBlank()) {
+            veterinario.setSenha(passwordEncoder.encode(dto.senha()));
+        }
 
         veterinario = repository.save(veterinario);
 
-        return new VeterinarioResponseDTO(
-                veterinario.getId(),
-                veterinario.getNome(),
-                veterinario.getEmail(),
-                veterinario.getCrmv()
-        );
+        return toResponse(veterinario);
     }
 
+    // ALTERADO - Sprint 4: so a propria conta
     @Transactional
     public void excluir(Long id) {
 
+        validarEscritaDoVeterinario(id);
+
         Veterinario veterinario = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Veterinário não encontrado com o ID: " + id));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Veterinário não encontrado com o ID: " + id));
 
         repository.delete(veterinario);
     }

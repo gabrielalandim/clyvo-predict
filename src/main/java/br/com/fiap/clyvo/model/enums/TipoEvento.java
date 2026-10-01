@@ -1,18 +1,29 @@
 package br.com.fiap.clyvo.model.enums;
 
 public enum TipoEvento {
+
+    // Eventos clinicos (registrados pelo veterinario no fluxo de atendimento)
     VACINA(10),
     CONSULTA_ROTINA(5),
     EXAME(5),
     DOENCA_LEVE(-15),
     CIRURGIA(-30),
     DOENCA_GRAVE(-40),
-    ACIDENTE(-50);
+    ACIDENTE(-50),
+
+    // NOVO - Sprint 4: eventos que o tutor registra entre uma consulta e outra.
+    // Impacto pequeno de proposito: e relato do tutor, nao diagnostico.
+    RELATO_SINTOMA(-5),
+    ALTERACAO_COMPORTAMENTO(-5);
 
     private final int impactoScore;
 
     TipoEvento(int impactoScore) {
         this.impactoScore = impactoScore;
+    }
+
+    public int getImpactoScore() {
+        return impactoScore;
     }
 
     // Padrão Strategy embutido no Enum para calcular a nova nota

@@ -1,6 +1,8 @@
 package br.com.fiap.clyvo.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,6 +16,28 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class TratadorDeErros {
+
+    // ===== NOVO - Sprint 4 =====
+    // Estes dois handlers precisam existir porque AcessoNegadoException e
+    // AccessDeniedException sao RuntimeException: sem eles, todo 403 do
+    // service cairia no handler generico la embaixo e viraria 400.
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<String> tratarAcessoNegado(AcessoNegadoException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> tratarAcessoNegadoSpring(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Acesso negado para o usuario autenticado.");
+    }
+
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<String> tratarNaoEncontrado(RecursoNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    // ===== FIM DO BLOCO NOVO =====
 
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<String> tratarRespostaIa(RestClientException ex) {
@@ -43,14 +67,11 @@ public class TratadorDeErros {
     // 1. Trata os erros do Bean Validation (@NotBlank, @NotNull, @Email, etc)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<DadosErroValidacao>> tratarErro400(MethodArgumentNotValidException ex) {
-        // Pega todos os erros gerados pelo @Valid
         var erros = ex.getFieldErrors();
-
-        // Mapeia para o nosso Record e devolve com Status 400 (Bad Request)
         return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
     }
 
-    // 2. Trata as nossas regras de negócio (ex: "Tutor não encontrado" lá no PetService)
+    // 2. Trata as nossas regras de negócio (ex: "E-mail já cadastrado")
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> tratarErroRegraDeNegocio(RuntimeException ex) {
         return ResponseEntity.badRequest().body("Erro: " + ex.getMessage());
