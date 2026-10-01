@@ -7,12 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-/**
- * NOVO - Sprint 4.
- * Le a identidade do usuario direto do JWT validado pelo Spring Security.
- * Regra do projeto: nenhuma decisao de ownership pode usar ID vindo do corpo
- * da requisicao ou da URL; tudo sai daqui.
- */
+
 @Component
 public class AuthUser {
 
@@ -27,7 +22,7 @@ public class AuthUser {
         throw new AcessoNegadoException("Requisicao sem usuario autenticado.");
     }
 
-    /** ID do tutor ou veterinario logado, lido da claim "id" do token. */
+
     public Long getId() {
         Object claim = tokenAtual().getClaim("id");
 
@@ -38,7 +33,7 @@ public class AuthUser {
         throw new AcessoNegadoException("Token sem identificacao de usuario.");
     }
 
-    /** Perfil do usuario logado: TUTOR ou VETERINARIO. */
+
     public String getPerfil() {
         Object claim = tokenAtual().getClaim("role");
         return claim == null ? "" : claim.toString();

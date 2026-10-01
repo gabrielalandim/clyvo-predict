@@ -17,7 +17,7 @@ public class RestClientConfig {
         var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);
-        // Send Content-Length for multipart requests to the Python service.
+
         return RestClient.builder()
                 .requestFactory(new BufferingClientHttpRequestFactory(factory));
     }

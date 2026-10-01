@@ -23,8 +23,8 @@ public class TutorService {
 
     private final TutorRepository repository;
     private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;     // ALTERADO - Sprint 4: bean unico
-    private final AuthUser authUser; // NOVO - Sprint 4
+    private final PasswordEncoder passwordEncoder;
+    private final AuthUser authUser;
 
     public TutorService(
             TutorRepository repository,
@@ -38,8 +38,7 @@ public class TutorService {
         this.authUser = authUser;
     }
 
-    // NOVO - Sprint 4: leitura. Tutor so le a propria conta; veterinario pode
-    // consultar tutores para o fluxo de atendimento.
+
     private void validarLeituraDoTutor(Long id) {
         if (authUser.isTutor()
                 && !id.equals(authUser.getId())) {
@@ -48,8 +47,7 @@ public class TutorService {
         }
     }
 
-    // NOVO - Sprint 4: escrita. So o proprio tutor altera ou apaga a conta dele.
-    // Nem outro tutor, nem veterinario.
+
     private void validarEscritaDoTutor(Long id) {
         if (!authUser.isTutor()
                 || !id.equals(authUser.getId())) {
@@ -58,7 +56,7 @@ public class TutorService {
         }
     }
 
-    // NOVO - Sprint 4: mapeamento unico
+
     private TutorResponseDTO toResponse(Tutor tutor) {
         return new TutorResponseDTO(
                 tutor.getId(),
@@ -115,8 +113,7 @@ public class TutorService {
         );
     }
 
-    // ALTERADO - Sprint 4: ownership + a senha so e trocada se vier preenchida.
-    // Antes, um PUT em /api/tutores/{id} de outra pessoa reescrevia a senha dela.
+
     @Transactional
     public TutorResponseDTO atualizar(Long id, TutorRequestDTO dto) {
 
@@ -139,7 +136,7 @@ public class TutorService {
         return toResponse(tutor);
     }
 
-    // ALTERADO - Sprint 4: so a propria conta
+
     @Transactional
     public void excluir(Long id) {
 
@@ -152,12 +149,12 @@ public class TutorService {
         repository.delete(tutor);
     }
 
-    // Listagem geral: liberada apenas para VETERINARIO no SecurityConfig
+
     public Page<TutorResponseDTO> listar(Pageable paginacao) {
         return repository.findAll(paginacao).map(this::toResponse);
     }
 
-    // ALTERADO - Sprint 4: ownership na leitura
+
     public TutorResponseDTO buscarPorId(Long id) {
 
         validarLeituraDoTutor(id);

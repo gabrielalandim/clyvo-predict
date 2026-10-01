@@ -13,7 +13,7 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     Page<Pet> findByNomeContainingIgnoreCase(String nome, Pageable paginacao);
 
-    // ===== NOVO - Sprint 4: consultas ja filtradas pelo dono =====
+
     Page<Pet> findByTutorId(Long tutorId, Pageable paginacao);
 
     Page<Pet> findByTutorIdAndNomeContainingIgnoreCase(Long tutorId, String nome, Pageable paginacao);

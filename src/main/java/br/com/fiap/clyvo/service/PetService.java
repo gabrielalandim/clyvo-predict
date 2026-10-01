@@ -33,8 +33,7 @@ public class PetService {
         this.authUser = authUser;
     }
 
-    // NOVO - Sprint 4: mapeamento unico. Antes este mesmo bloco estava
-    // repetido quatro vezes na classe (violacao de DRY).
+
     private PetResponseDTO toResponse(Pet pet) {
         return new PetResponseDTO(
                 pet.getId(),
@@ -48,12 +47,7 @@ public class PetService {
         );
     }
 
-    /**
-     * NOVO - Sprint 4.
-     * Busca o pet e garante que o usuario logado pode acessa-lo.
-     * 404 quando o pet nao existe, 403 quando existe mas e de outro tutor.
-     * Publico porque o EventoSaudeService reaproveita a mesma regra.
-     */
+
     @Transactional(readOnly = true)
     public Pet buscarPetAutorizado(Long id) {
         Pet pet = petRepository.findById(id)
@@ -69,10 +63,7 @@ public class PetService {
         return pet;
     }
 
-    // ALTERADO - Sprint 4:
-    // 1) tutor so ve os proprios pets;
-    // 2) a chave do cache passou a incluir o ID do usuario. Sem isso o cache
-    //    devolvia a lista do tutor A para o tutor B, anulando o filtro.
+
     @Cacheable(
             value = "listaDePets",
             key = "@authUser.id + '_' + (#nome == null ? '' : #nome) "
@@ -90,7 +81,7 @@ public class PetService {
                     ? petRepository.findByTutorIdAndNomeContainingIgnoreCase(tutorId, nome, paginacao)
                     : petRepository.findByTutorId(tutorId, paginacao);
         } else {
-            // VETERINARIO continua enxergando a base de pacientes
+
             pets = filtrandoPorNome
                     ? petRepository.findByNomeContainingIgnoreCase(nome, paginacao)
                     : petRepository.findAll(paginacao);
@@ -99,13 +90,13 @@ public class PetService {
         return pets.map(this::toResponse);
     }
 
-    // ALTERADO - Sprint 4: passa pela checagem de dono
+
     @Transactional(readOnly = true)
     public PetResponseDTO buscarPorId(Long id) {
         return toResponse(buscarPetAutorizado(id));
     }
 
-    // ALTERADO - Sprint 4: o dono do pet vem do token, nao do corpo da requisicao
+
     @CacheEvict(value = "listaDePets", allEntries = true)
     @Transactional
     public PetResponseDTO cadastrar(PetRequestDTO dto) {
@@ -113,7 +104,7 @@ public class PetService {
         Long tutorId;
 
         if (authUser.isTutor()) {
-            tutorId = authUser.getId(); // tutorId do corpo e ignorado
+            tutorId = authUser.getId();
         } else {
             tutorId = dto.tutorId();
             if (tutorId == null) {
@@ -140,7 +131,6 @@ public class PetService {
         return toResponse(pet);
     }
 
-    // ALTERADO - Sprint 4: passa pela checagem de dono
     @CacheEvict(value = "listaDePets", allEntries = true)
     @Transactional
     public PetResponseDTO atualizar(Long id, PetRequestDTO dto) {
@@ -152,14 +142,14 @@ public class PetService {
         pet.setRaca(dto.raca());
         pet.setPeso(dto.peso());
         pet.setIdade(dto.idade());
-        // o tutor dono do pet nunca e trocado por dado vindo do cliente
+
 
         pet = petRepository.save(pet);
 
         return toResponse(pet);
     }
 
-    // ALTERADO - Sprint 4: passa pela checagem de dono
+
     @CacheEvict(value = "listaDePets", allEntries = true)
     @Transactional
     public void excluir(Long id) {

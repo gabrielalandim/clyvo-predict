@@ -32,11 +32,11 @@ public class Tutor {
     @OneToMany(mappedBy = "tutor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Pet> pets = new ArrayList<>();
 
-    // Construtor Padrão (Obrigatório para o JPA)
+
     public Tutor() {
     }
 
-    // Construtor Completo
+
     public Tutor(Long id, String nome, String email, String telefone, String senha) {
         this.id = id;
         this.nome = nome;

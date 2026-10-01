@@ -8,11 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * NOVO - Sprint 4.
- * Habilita o botao "Authorize" no Swagger UI. Sem isso nao da para testar
- * nenhum endpoint protegido pela interface, porque o Bearer nao e enviado.
- */
+
 @Configuration
 @OpenAPIDefinition(
         info = @Info(

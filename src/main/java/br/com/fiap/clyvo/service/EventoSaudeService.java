@@ -17,7 +17,7 @@ public class EventoSaudeService {
 
     private final EventoSaudeRepository repository;
     private final PetRepository petRepository;
-    private final PetService petService; // NOVO - Sprint 4: reaproveita a regra de ownership
+    private final PetService petService;
 
     public EventoSaudeService(
             EventoSaudeRepository repository,
@@ -29,7 +29,7 @@ public class EventoSaudeService {
         this.petService = petService;
     }
 
-    // NOVO - Sprint 4: mapeamento unico (antes estava duplicado nos dois metodos)
+
     private EventoSaudeResponseDTO toResponse(EventoSaude evento, Pet pet) {
         return new EventoSaudeResponseDTO(
                 evento.getId(),
@@ -41,8 +41,7 @@ public class EventoSaudeService {
         );
     }
 
-    // ALTERADO - Sprint 4: o pet agora e carregado pela regra de ownership.
-    // O calculo do Health Score, o Strategy do enum e o CacheEvict continuam iguais.
+
     @CacheEvict(value = "listaDePets", allEntries = true)
     @Transactional
     public EventoSaudeResponseDTO cadastrarEvento(EventoSaudeRequestDTO dto) {
@@ -65,7 +64,6 @@ public class EventoSaudeService {
         return toResponse(evento, pet);
     }
 
-    // ALTERADO - Sprint 4: historico clinico so do pet que o usuario pode ver
     @Transactional(readOnly = true)
     public Page<EventoSaudeResponseDTO> buscarEventosPorPet(Long petId, Pageable paginacao) {
 

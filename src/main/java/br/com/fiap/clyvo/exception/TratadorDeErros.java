@@ -17,10 +17,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice
 public class TratadorDeErros {
 
-    // ===== NOVO - Sprint 4 =====
-    // Estes dois handlers precisam existir porque AcessoNegadoException e
-    // AccessDeniedException sao RuntimeException: sem eles, todo 403 do
-    // service cairia no handler generico la embaixo e viraria 400.
 
     @ExceptionHandler(AcessoNegadoException.class)
     public ResponseEntity<String> tratarAcessoNegado(AcessoNegadoException ex) {
@@ -37,7 +33,7 @@ public class TratadorDeErros {
     public ResponseEntity<String> tratarNaoEncontrado(RecursoNaoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-    // ===== FIM DO BLOCO NOVO =====
+
 
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<String> tratarRespostaIa(RestClientException ex) {
@@ -64,14 +60,14 @@ public class TratadorDeErros {
         return ResponseEntity.status(413).body("Imagem muito grande. O limite é 10 MB por arquivo.");
     }
 
-    // 1. Trata os erros do Bean Validation (@NotBlank, @NotNull, @Email, etc)
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<DadosErroValidacao>> tratarErro400(MethodArgumentNotValidException ex) {
         var erros = ex.getFieldErrors();
         return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
     }
 
-    // 2. Trata as nossas regras de negócio (ex: "E-mail já cadastrado")
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> tratarErroRegraDeNegocio(RuntimeException ex) {
         return ResponseEntity.badRequest().body("Erro: " + ex.getMessage());

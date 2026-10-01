@@ -22,8 +22,8 @@ public class VeterinarioService {
 
     private final VeterinarioRepository repository;
     private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;       // ALTERADO - Sprint 4
-    private final AuthUser authUser; // NOVO - Sprint 4
+    private final PasswordEncoder passwordEncoder;
+    private final AuthUser authUser;
 
     public VeterinarioService(
             VeterinarioRepository repository,
@@ -37,7 +37,7 @@ public class VeterinarioService {
         this.authUser = authUser;
     }
 
-    // NOVO - Sprint 4: um veterinario so altera ou apaga a propria conta
+
     private void validarEscritaDoVeterinario(Long id) {
         if (!authUser.isVeterinario()
                 || !id.equals(authUser.getId())) {
@@ -46,7 +46,6 @@ public class VeterinarioService {
         }
     }
 
-    // NOVO - Sprint 4: mapeamento unico
     private VeterinarioResponseDTO toResponse(Veterinario veterinario) {
         return new VeterinarioResponseDTO(
                 veterinario.getId(),
@@ -121,7 +120,7 @@ public class VeterinarioService {
         return toResponse(veterinario);
     }
 
-    // ALTERADO - Sprint 4: ownership + senha so muda se vier preenchida
+
     @Transactional
     public VeterinarioResponseDTO atualizar(Long id, VeterinarioRequestDTO dto) {
 
@@ -144,7 +143,7 @@ public class VeterinarioService {
         return toResponse(veterinario);
     }
 
-    // ALTERADO - Sprint 4: so a propria conta
+
     @Transactional
     public void excluir(Long id) {
 

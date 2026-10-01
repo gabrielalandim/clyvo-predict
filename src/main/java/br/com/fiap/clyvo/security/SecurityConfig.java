@@ -3,7 +3,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.core.io.Resource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,11 +48,10 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(auth -> auth
 
-                        // Cadastro e login do tutor
+
                         .requestMatchers(HttpMethod.POST, "/api/tutores").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tutores/login").permitAll()
 
-                        // Cadastro e login do veterinário
                         .requestMatchers(HttpMethod.POST, "/api/veterinarios").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/veterinarios/login").permitAll()
 
@@ -64,16 +62,23 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Rotas exclusivas do veterinário
+                        .requestMatchers(HttpMethod.GET, "/api/tutores").hasRole("VETERINARIO")
+
+                        .requestMatchers("/api/tutores/**").hasAnyRole("TUTOR", "VETERINARIO")
+
+
                         .requestMatchers("/api/veterinarios/**")
                         .hasRole("VETERINARIO")
 
-                        // Pets: tutor e veterinário
+
                         .requestMatchers("/api/pets/**")
                         .hasAnyRole("TUTOR", "VETERINARIO")
 
-                        // Eventos de saúde: tutor e veterinário
-                        .requestMatchers("/api/eventos-saude/**")
+                        .requestMatchers("/api/eventos/**")
+                        .hasAnyRole("TUTOR", "VETERINARIO")
+
+
+                        .requestMatchers("/api/ia/**")
                         .hasAnyRole("TUTOR", "VETERINARIO")
 
                         // Todo o restante exige login
