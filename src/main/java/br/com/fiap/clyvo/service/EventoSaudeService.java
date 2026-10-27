@@ -1,6 +1,7 @@
 package br.com.fiap.clyvo.service;
 
 import br.com.fiap.clyvo.dto.EventoSaudeRequestDTO;
+import br.com.fiap.clyvo.exception.RecursoNaoEncontradoException;
 import br.com.fiap.clyvo.dto.EventoSaudeResponseDTO;
 import br.com.fiap.clyvo.model.EventoSaude;
 import br.com.fiap.clyvo.model.Pet;
@@ -73,5 +74,54 @@ public class EventoSaudeService {
                 repository.findByPetIdOrderByDataEventoDesc(pet.getId(), paginacao);
 
         return eventos.map(evento -> toResponse(evento, pet));
+    }
+
+    private EventoSaude buscarEventoAutorizado(Long id) {
+        EventoSaude evento = repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Evento não encontrado com o ID: " + id));
+        petService.buscarPetAutorizado(evento.getPet().getId());
+        return evento;
+    }
+
+    @Transactional(readOnly = true)
+    public EventoSaudeResponseDTO buscarPorId(Long id) {
+        EventoSaude evento = buscarEventoAutorizado(id);
+        return toResponse(evento, evento.getPet());
+    }
+
+    private void recalcularScore(Pet pet) {
+        int score = 100;
+        for (EventoSaude evento : repository.findByPetIdOrderByIdAsc(pet.getId())) {
+            score = evento.getTipoEvento().calcularNovoScore(score);
+        }
+        pet.setHealthScore(score);
+        petRepository.save(pet);
+    }
+
+    @CacheEvict(value = "listaDePets", allEntries = true)
+    @Transactional
+    public EventoSaudeResponseDTO atualizar(Long id, EventoSaudeRequestDTO dto) {
+        EventoSaude evento = buscarEventoAutorizado(id);
+        Pet pet = evento.getPet();
+        if (!pet.getId().equals(dto.petId())) {
+            throw new IllegalArgumentException("Não é permitido alterar o pet de um evento.");
+        }
+        evento.setTipoEvento(dto.tipoEvento());
+        evento.setDescricao(dto.descricao());
+        evento.setDataEvento(dto.dataEvento());
+        repository.saveAndFlush(evento);
+        recalcularScore(pet);
+        return toResponse(evento, pet);
+    }
+
+    @CacheEvict(value = "listaDePets", allEntries = true)
+    @Transactional
+    public void excluir(Long id) {
+        EventoSaude evento = buscarEventoAutorizado(id);
+        Pet pet = evento.getPet();
+        repository.delete(evento);
+        repository.flush();
+        recalcularScore(pet);
     }
 }

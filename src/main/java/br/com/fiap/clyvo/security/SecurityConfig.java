@@ -21,7 +21,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-
+import br.com.fiap.clyvo.repository.TutorRepository;
+import br.com.fiap.clyvo.repository.VeterinarioRepository;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
@@ -86,6 +93,21 @@ public class SecurityConfig {
                 )
 
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler((request, response, ex) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+
+                            response.getWriter().write("""
+            {
+                "status": 403,
+                "erro": "Acesso negado",
+                "mensagem": "Você não tem permissão para acessar este recurso."
+            }
+            """);
+                        })
+                )
 
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                         jwt -> jwt.jwtAuthenticationConverter(
@@ -107,16 +129,65 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     @Bean
-    JwtDecoder jwtDecoder(RsaKeyProperties rsaKeyProperties) throws Exception {
+    JwtDecoder jwtDecoder(
+            RsaKeyProperties rsaKeyProperties,
+            TutorRepository tutorRepository,
+            VeterinarioRepository veterinarioRepository
+    ) throws Exception {
 
         RSAPublicKey publicKey = RsaKeyConverters.x509()
                 .convert(rsaKeyProperties.publicKey().getInputStream());
 
-        return NimbusJwtDecoder
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
                 .withPublicKey(publicKey)
                 .build();
+
+        OAuth2TokenValidator<Jwt> validarConta = jwt -> {
+
+            Object idClaim = jwt.getClaim("id");
+            String role = jwt.getClaimAsString("role");
+
+            if (!(idClaim instanceof Number id) || role == null) {
+                return tokenRevogado();
+            }
+
+            boolean existe = switch (role) {
+                case "TUTOR" ->
+                        tutorRepository.existsById(id.longValue());
+
+                case "VETERINARIO" ->
+                        veterinarioRepository.existsById(id.longValue());
+
+                default -> false;
+            };
+
+            return existe
+                    ? OAuth2TokenValidatorResult.success()
+                    : tokenRevogado();
+        };
+
+        decoder.setJwtValidator(
+                new DelegatingOAuth2TokenValidator<>(
+                        JwtValidators.createDefault(),
+                        validarConta
+                )
+        );
+
+        return decoder;
     }
+
+    private OAuth2TokenValidatorResult tokenRevogado() {
+        return OAuth2TokenValidatorResult.failure(
+                new OAuth2Error(
+                        "invalid_token",
+                        "Token inválido: conta não encontrada.",
+                        null
+                )
+        );
+    }
+
 
     @Bean
     JwtEncoder jwtEncoder(RsaKeyProperties rsaKeyProperties) throws Exception {

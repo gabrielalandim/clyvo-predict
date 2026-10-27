@@ -7,6 +7,7 @@ import br.com.fiap.clyvo.exception.RecursoNaoEncontradoException;
 import br.com.fiap.clyvo.model.Pet;
 import br.com.fiap.clyvo.model.Tutor;
 import br.com.fiap.clyvo.repository.PetRepository;
+import br.com.fiap.clyvo.repository.EventoSaudeRepository;
 import br.com.fiap.clyvo.repository.TutorRepository;
 import br.com.fiap.clyvo.security.AuthUser;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,15 +22,18 @@ public class PetService {
 
     private final PetRepository petRepository;
     private final TutorRepository tutorRepository;
+    private final EventoSaudeRepository eventoSaudeRepository;
     private final AuthUser authUser; // NOVO - Sprint 4
 
     public PetService(
             PetRepository petRepository,
             TutorRepository tutorRepository,
+            EventoSaudeRepository eventoSaudeRepository,
             AuthUser authUser
     ) {
         this.petRepository = petRepository;
         this.tutorRepository = tutorRepository;
+        this.eventoSaudeRepository = eventoSaudeRepository;
         this.authUser = authUser;
     }
 
@@ -154,6 +158,8 @@ public class PetService {
     @Transactional
     public void excluir(Long id) {
         Pet pet = buscarPetAutorizado(id);
+        eventoSaudeRepository.deleteByPetId(pet.getId());
+        eventoSaudeRepository.flush();
         petRepository.delete(pet);
     }
 }
