@@ -3,7 +3,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.core.io.Resource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,7 +21,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-
+import br.com.fiap.clyvo.repository.TutorRepository;
+import br.com.fiap.clyvo.repository.VeterinarioRepository;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
@@ -49,11 +55,10 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(auth -> auth
 
-                        // Cadastro e login do tutor
+
                         .requestMatchers(HttpMethod.POST, "/api/tutores").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tutores/login").permitAll()
 
-                        // Cadastro e login do veterinário
                         .requestMatchers(HttpMethod.POST, "/api/veterinarios").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/veterinarios/login").permitAll()
 
@@ -64,16 +69,23 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Rotas exclusivas do veterinário
+                        .requestMatchers(HttpMethod.GET, "/api/tutores").hasRole("VETERINARIO")
+
+                        .requestMatchers("/api/tutores/**").hasAnyRole("TUTOR", "VETERINARIO")
+
+
                         .requestMatchers("/api/veterinarios/**")
                         .hasRole("VETERINARIO")
 
-                        // Pets: tutor e veterinário
+
                         .requestMatchers("/api/pets/**")
                         .hasAnyRole("TUTOR", "VETERINARIO")
 
-                        // Eventos de saúde: tutor e veterinário
-                        .requestMatchers("/api/eventos-saude/**")
+                        .requestMatchers("/api/eventos/**")
+                        .hasAnyRole("TUTOR", "VETERINARIO")
+
+
+                        .requestMatchers("/api/ia/**")
                         .hasAnyRole("TUTOR", "VETERINARIO")
 
                         // Todo o restante exige login
@@ -81,6 +93,21 @@ public class SecurityConfig {
                 )
 
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler((request, response, ex) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+
+                            response.getWriter().write("""
+            {
+                "status": 403,
+                "erro": "Acesso negado",
+                "mensagem": "Você não tem permissão para acessar este recurso."
+            }
+            """);
+                        })
+                )
 
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                         jwt -> jwt.jwtAuthenticationConverter(
@@ -102,16 +129,65 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     @Bean
-    JwtDecoder jwtDecoder(RsaKeyProperties rsaKeyProperties) throws Exception {
+    JwtDecoder jwtDecoder(
+            RsaKeyProperties rsaKeyProperties,
+            TutorRepository tutorRepository,
+            VeterinarioRepository veterinarioRepository
+    ) throws Exception {
 
         RSAPublicKey publicKey = RsaKeyConverters.x509()
                 .convert(rsaKeyProperties.publicKey().getInputStream());
 
-        return NimbusJwtDecoder
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
                 .withPublicKey(publicKey)
                 .build();
+
+        OAuth2TokenValidator<Jwt> validarConta = jwt -> {
+
+            Object idClaim = jwt.getClaim("id");
+            String role = jwt.getClaimAsString("role");
+
+            if (!(idClaim instanceof Number id) || role == null) {
+                return tokenRevogado();
+            }
+
+            boolean existe = switch (role) {
+                case "TUTOR" ->
+                        tutorRepository.existsById(id.longValue());
+
+                case "VETERINARIO" ->
+                        veterinarioRepository.existsById(id.longValue());
+
+                default -> false;
+            };
+
+            return existe
+                    ? OAuth2TokenValidatorResult.success()
+                    : tokenRevogado();
+        };
+
+        decoder.setJwtValidator(
+                new DelegatingOAuth2TokenValidator<>(
+                        JwtValidators.createDefault(),
+                        validarConta
+                )
+        );
+
+        return decoder;
     }
+
+    private OAuth2TokenValidatorResult tokenRevogado() {
+        return OAuth2TokenValidatorResult.failure(
+                new OAuth2Error(
+                        "invalid_token",
+                        "Token inválido: conta não encontrada.",
+                        null
+                )
+        );
+    }
+
 
     @Bean
     JwtEncoder jwtEncoder(RsaKeyProperties rsaKeyProperties) throws Exception {

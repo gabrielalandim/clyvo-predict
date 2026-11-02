@@ -35,4 +35,21 @@ public class EventoSaudeController {
         Page<EventoSaudeResponseDTO> eventos = service.buscarEventosPorPet(petId, paginacao);
         return ResponseEntity.ok(eventos);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EventoSaudeResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EventoSaudeResponseDTO> atualizar(
+            @PathVariable Long id, @Valid @RequestBody EventoSaudeRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        service.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
 }
