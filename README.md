@@ -1,401 +1,497 @@
-<div align="center">
-
 # 🔮 Clyvo Predict
 
-**Microsserviço de Predição de Saúde Animal — Challenge FIAP 2026**
+**API de Saúde Animal — Challenge FIAP 2026 | Sprint 4**
 
-[![Java](https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Oracle](https://img.shields.io/badge/Oracle-DB-red?style=for-the-badge&logo=oracle&logoColor=white)](https://www.oracle.com/database/)
-[![Maven](https://img.shields.io/badge/Maven-Build-blue?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
-[![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
+![Java 21](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen?style=for-the-badge&logo=springboot&logoColor=white)
+![Oracle](https://img.shields.io/badge/Oracle-Database-red?style=for-the-badge&logo=oracle&logoColor=white)
+![JWT](https://img.shields.io/badge/Spring_Security-JWT_RSA-blue?style=for-the-badge)
+![Flyway](https://img.shields.io/badge/Flyway-Migrations-red?style=for-the-badge)
 
-> Serviço backend desenvolvido como parte do **Challenge FIAP 2026** em parceria com a startup **Clyvo** — plataforma voltada à análise preditiva da saúde de pets, auxiliando tutores a acompanhar o histórico clínico de seus animais por meio de um **Health Score dinâmico**.
-
-</div>
+O **Clyvo Predict** é uma solução desenvolvida para o **Challenge FIAP 2026**, em parceria com a startup Clyvo. A plataforma permite acompanhar a saúde de pets por meio de histórico clínico, eventos de saúde e um **Health Score dinâmico**, com integração a um serviço de inteligência artificial.
 
 ---
 
-## 📋 Índice
+## 🎬 Vídeo de apresentação — Sprint 4
 
-- [Sobre o Projeto](#-sobre-o-projeto)
-- [Funcionalidades](#-funcionalidades)
-- [Arquitetura e Tecnologias](#-arquitetura-e-tecnologias)
-- [Modelo de Domínio](#-modelo-de-domínio)
-- [Endpoints da API](#-endpoints-da-api)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Pré-requisitos](#-pré-requisitos)
-- [Configuração e Instalação](#-configuração-e-instalação)
-- [Executando a Aplicação](#-executando-a-aplicação)
-- [Documentação da API](#-documentação-da-api)
-- [Design Patterns](#-design-patterns)
-- [Testes](#-testes)
-- [Time](#-time)
+**Assista à demonstração do projeto:**
+
+▶️ https://youtu.be/WREPnKKYxP
 
 ---
 
-## 🎯 Sobre o Projeto
+## 🌐 Aplicação online
 
-O **Clyvo Predict** é o núcleo de backend da solução desenvolvida no **Challenge 2026 da FIAP** em parceria com a startup **Clyvo**. O serviço expõe uma **API RESTful** que permite o cadastro de tutores e seus pets, o registro de eventos de saúde (consultas, vacinas, doenças, cirurgias) e o cálculo automático de um **Health Score** — uma pontuação dinâmica que reflete a condição de saúde de cada animal ao longo do tempo.
+| Recurso | Link |
+|---|---|
+| API Java | https://clyvo-api-kr5f.onrender.com/api |
+| Swagger UI | https://clyvo-api-kr5f.onrender.com/swagger-ui/index.html |
+| Serviço de IA | https://clyvo-ia.onrender.com |
+| Aplicativo mobile | https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3 |
+| Vídeo da Sprint 4 | https://youtu.be/WREPnKKYxP |
 
-### Contexto do Desafio
+> A API está hospedada no Render. A primeira requisição pode demorar alguns instantes caso o serviço esteja inativo.
 
-O Challenge FIAP é um projeto interdisciplinar onde equipes de estudantes trabalham diretamente com empresas reais para desenvolver soluções tecnológicas com impacto no mercado. A **Clyvo** propôs o desafio de criar um serviço preditivo capaz de processar dados clínicos de pets e entregar insights relevantes de forma escalável, segura e documentada.
+---
+
+## 🎯 Sobre o projeto
+
+O Clyvo Predict é uma API RESTful desenvolvida com Java e Spring Boot para gerenciar tutores, veterinários, pets e eventos de saúde.
+
+O sistema calcula automaticamente uma pontuação de saúde para cada pet, permitindo acompanhar sua evolução ao longo do tempo.
+
+A solução integra:
+
+- Backend Java com Spring Boot
+- Banco de dados Oracle
+- Autenticação e autorização com Spring Security e JWT RSA
+- Controle de versões do banco com Flyway
+- Aplicativo mobile React Native e Expo
+- Integração com serviço de IA
+- Deploy online no Render
+- Documentação Swagger/OpenAPI
 
 ---
 
 ## ✨ Funcionalidades
 
-- 🐾 **Gestão de Pets** — cadastro, consulta, atualização e remoção de animais
-- 👤 **Gestão de Tutores** — cadastro com senha criptografada (BCrypt) e autenticação por e-mail
-- 📋 **Registro de Eventos de Saúde** — vacinas, consultas, exames, doenças e acidentes
-- 💚 **Health Score dinâmico** — pontuação calculada automaticamente a cada evento (0 a 100)
-- 🔍 **Busca com parâmetros** — filtro de pets por nome
-- 📄 **Paginação e ordenação** — todos os endpoints de listagem suportam paginação
-- ⚡ **Cache de listagem** — otimização de consultas frequentes com Spring Cache
-- ✅ **Validação de dados** — Bean Validation em todos os campos de entrada
-- 🔒 **Segurança de senha** — hash BCrypt no cadastro e validação no login
-- 📖 **Documentação interativa** — Swagger UI gerado automaticamente
+- 🐾 **Gestão de Pets:** cadastro, consulta, atualização e exclusão
+- 👤 **Gestão de Tutores:** cadastro, login e gerenciamento de conta
+- 🩺 **Gestão de Veterinários:** cadastro, login e gerenciamento de conta
+- 📋 **Eventos de Saúde:** registro, consulta, atualização e exclusão
+- 💚 **Health Score:** pontuação dinâmica de 0 a 100
+- 🔍 **Busca de Pets:** pesquisa por nome e listagem paginada
+- 🔐 **Autenticação JWT:** tokens assinados com RSA
+- 🛡️ **Controle de acesso:** permissões específicas para tutores e veterinários
+- 🚫 **Revogação por exclusão:** tokens de contas excluídas deixam de ser aceitos
+- 🤖 **Integração com IA:** análise de imagens no cadastro de pets
+- 📖 **Swagger:** documentação interativa da API
+- 🗄️ **Flyway:** gerenciamento de migrations do Oracle
+- ⚡ **Spring Cache:** otimização de consultas
 
 ---
 
-## 🛠️ Arquitetura e Tecnologias
+## 🛠️ Tecnologias utilizadas
 
-### Stack Principal
-
-| Tecnologia | Versão | Finalidade |
-|---|---|---|
-| **Java** | 17 (LTS) | Linguagem principal |
-| **Spring Boot** | 3.5 | Framework de aplicação |
-| **Spring Data JPA** | — | Abstração de persistência ORM |
-| **Spring Web** | — | Camada REST (controllers, DTOs) |
-| **Spring Validation** | — | Bean Validation nos DTOs e entidades |
-| **Spring Cache** | — | Cache em memória para otimização |
-| **Spring Security Crypto** | — | Criptografia BCrypt de senhas |
-| **Oracle JDBC (ojdbc11)** | — | Driver de conexão com o banco Oracle |
-| **Lombok** | — | Redução de boilerplate |
-| **Springdoc OpenAPI** | 2.8 | Geração automática do Swagger UI |
-| **Spring DevTools** | — | Reload automático em desenvolvimento |
-| **Maven** | Wrapper | Gerenciamento de build e dependências |
-
-### Padrão Arquitetural
-
-A aplicação segue o padrão de **arquitetura em camadas (Layered Architecture)**:
-
-```
-┌──────────────────────────────────────────────┐
-│              Controller Layer                │  ← REST Endpoints (@RestController)
-│     TutorController  PetController           │
-│     EventoSaudeController                    │
-├──────────────────────────────────────────────┤
-│               Service Layer                  │  ← Regras de negócio (@Service)
-│     TutorService  PetService                 │
-│     EventoSaudeService                       │
-├──────────────────────────────────────────────┤
-│             Repository Layer                 │  ← Acesso a dados (Spring Data JPA)
-│     TutorRepository  PetRepository           │
-│     EventoSaudeRepository                    │
-├──────────────────────────────────────────────┤
-│              Model Layer                     │  ← Entidades JPA + Enum
-│     Tutor  Pet  EventoSaude  TipoEvento      │
-├──────────────────────────────────────────────┤
-│           Database (Oracle DB)               │  ← Persistência
-│     TB_TUTOR  TB_PET  TB_EVENTO_SAUDE        │
-└──────────────────────────────────────────────┘
-```
-
----
-
-## 🗂️ Modelo de Domínio
-
-### Entidades e Relacionamentos
-
-```
-Tutor (1) ──────────── (N) Pet (1) ──────────── (N) EventoSaude
-  - id                       - id                      - id
-  - nome                     - nome                    - tipoEvento (Enum)
-  - email (unique)           - especie                 - descricao
-  - telefone                 - raca                    - dataEvento
-  - senha (BCrypt)           - idade                   - pet (FK)
-                             - peso
-                             - healthScore (0-100)
-                             - tutor (FK)
-```
-
-### Health Score — Como funciona
-
-O **Health Score** é uma pontuação de 0 a 100 que reflete a condição de saúde do pet. Cada evento registrado impacta automaticamente essa pontuação:
-
-| Tipo de Evento | Impacto no Score |
+| Tecnologia | Versão / finalidade |
 |---|---|
-| `VACINA` | +10 |
-| `CONSULTA_ROTINA` | +5 |
-| `EXAME` | +5 |
-| `DOENCA_LEVE` | -15 |
-| `CIRURGIA` | -30 |
-| `DOENCA_GRAVE` | -40 |
-| `ACIDENTE` | -50 |
+| Java | 21 |
+| Spring Boot | 3.5.14 |
+| Spring Web | API REST |
+| Spring Data JPA | Persistência |
+| Spring Security | Autenticação e autorização |
+| OAuth2 Resource Server | Validação JWT |
+| RSA | Assinatura dos tokens |
+| BCrypt | Criptografia de senhas |
+| Oracle Database | Banco relacional |
+| Flyway | Migrations |
+| Spring Cache | Cache de consultas |
+| Bean Validation | Validação de dados |
+| Springdoc OpenAPI | 2.8.16 |
+| Maven | Build e dependências |
+| React Native / Expo | Aplicativo mobile |
+| Render | Hospedagem |
 
-> Todo pet inicia com **Health Score = 100** e o valor é mantido sempre entre **0 e 100**.
+---
+
+## 🏗️ Arquitetura
+
+
+Diagrama de classe:
+<img width="680" height="860" alt="diagrama_de_classes_clyvo" src="https://github.com/user-attachments/assets/18ee5b9f-30a0-4eb6-a846-b19dfdf6077c" />
+
+A aplicação utiliza arquitetura em camadas:
+
+```text
+Aplicativo Mobile
+       |
+       v
+API REST - Spring Boot
+       |
+Spring Security / JWT
+       |
+   Controllers
+       |
+    Services
+       |
+  Repositories
+       |
+  Oracle Database
+```
+
+A API Java também se comunica com um serviço externo de inteligência artificial.
+
+### Camadas
+
+- **Controller:** recebe as requisições HTTP
+- **Service:** implementa regras de negócio
+- **Repository:** realiza operações no banco
+- **Model:** representa entidades JPA
+- **DTO:** define os dados de entrada e saída
+- **Security:** gerencia autenticação e autorização
+- **Exception:** trata erros da aplicação
+
+---
+
+## 🔐 Segurança e autenticação
+
+O sistema utiliza Spring Security com autenticação stateless baseada em JWT.
+
+Os tokens são assinados e validados com chaves RSA.
+
+As senhas são armazenadas com hash BCrypt.
+
+### Perfis
+
+**TUTOR**
+- Gerencia sua própria conta
+- Consulta seus pets
+- Acessa informações autorizadas dos seus animais
+
+**VETERINARIO**
+- Gerencia sua própria conta
+- Consulta a listagem geral de pets
+- Visualiza os tutores relacionados aos pets, conforme as permissões da API
+
+As permissões são validadas pelo backend.
+
+### Autenticação
+
+```http
+Authorization: Bearer SEU_TOKEN_JWT
+```
+
+A API também valida a existência da conta associada ao token. Quando um tutor ou veterinário é excluído, seu token deixa de ser aceito.
+
+---
+
+## 🗂️ Modelo de domínio
+
+```text
+Tutor (1) -------- (N) Pet (1) -------- (N) EventoSaude
+                       |
+                  Health Score
+```
+
+### Entidades principais
+
+**Tutor**
+- ID
+- Nome
+- E-mail
+- Telefone
+- Senha
+
+**Veterinário**
+- ID
+- Dados cadastrais
+- Credenciais de autenticação
+
+**Pet**
+- ID
+- Nome
+- Espécie
+- Raça
+- Idade
+- Peso
+- Health Score
+- Tutor responsável
+
+**EventoSaude**
+- ID
+- Tipo do evento
+- Descrição
+- Data
+- Pet relacionado
+
+---
+
+## 💚 Health Score
+
+O Health Score é uma pontuação de 0 a 100 que representa indicadores da condição de saúde do pet.
+
+Cada evento registrado pode alterar automaticamente a pontuação.
+
+| Evento | Impacto |
+|---|---:|
+| VACINA | +10 |
+| CONSULTA_ROTINA | +5 |
+| EXAME | +5 |
+| DOENCA_LEVE | -15 |
+| CIRURGIA | -30 |
+| DOENCA_GRAVE | -40 |
+| ACIDENTE | -50 |
+| RELATO_SINTOMA | -5 |
+| ALTERACAO_COMPORTAMENTO | -5 |
+
+O pet inicia com **100 pontos**.
+
+O valor permanece sempre entre **0 e 100**.
 
 ---
 
 ## 🌐 Endpoints da API
 
-### Tutores — `/api/tutores`
+**URL base:**
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| `POST` | `/api/tutores` | Cadastrar novo tutor |
-| `POST` | `/api/tutores/login` | Autenticar tutor |
-| `GET` | `/api/tutores` | Listar tutores (paginado) |
-| `GET` | `/api/tutores/{id}` | Buscar tutor por ID |
-| `PUT` | `/api/tutores/{id}` | Atualizar tutor |
-| `DELETE` | `/api/tutores/{id}` | Remover tutor |
-
-### Pets — `/api/pets`
-
-| Método | Endpoint | Descrição |
-|---|---|---|
-| `POST` | `/api/pets` | Cadastrar novo pet |
-| `GET` | `/api/pets` | Listar pets (paginado, filtrável por `?nome=`) |
-| `GET` | `/api/pets/{id}` | Buscar pet por ID |
-| `PUT` | `/api/pets/{id}` | Atualizar pet |
-| `DELETE` | `/api/pets/{id}` | Remover pet |
-
-### Eventos de Saúde — `/api/eventos`
-
-| Método | Endpoint | Descrição |
-|---|---|---|
-| `POST` | `/api/eventos` | Registrar evento e atualizar Health Score |
-| `GET` | `/api/eventos/pet/{petId}` | Listar eventos de um pet (paginado, ordenado por data) |
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-clyvo-predict/
-│
-├── src/
-│   ├── main/
-│   │   ├── java/br/com/fiap/clyvo/
-│   │   │   ├── controller/
-│   │   │   │   ├── TutorController.java
-│   │   │   │   ├── PetController.java
-│   │   │   │   └── EventoSaudeController.java
-│   │   │   ├── service/
-│   │   │   │   ├── TutorService.java
-│   │   │   │   ├── PetService.java
-│   │   │   │   └── EventoSaudeService.java
-│   │   │   ├── repository/
-│   │   │   │   ├── TutorRepository.java
-│   │   │   │   ├── PetRepository.java
-│   │   │   │   └── EventoSaudeRepository.java
-│   │   │   ├── model/
-│   │   │   │   ├── Tutor.java
-│   │   │   │   ├── Pet.java
-│   │   │   │   ├── EventoSaude.java
-│   │   │   │   └── enums/
-│   │   │   │       └── TipoEvento.java
-│   │   │   ├── dto/
-│   │   │   │   ├── TutorRequestDTO.java / TutorResponseDTO.java
-│   │   │   │   ├── TutorLoginRequestDTO.java / TutorAuthResponseDTO.java
-│   │   │   │   ├── PetRequestDTO.java / PetResponseDTO.java
-│   │   │   │   └── EventoSaudeRequestDTO.java / EventoSaudeResponseDTO.java
-│   │   │   ├── exception/
-│   │   │   │   ├── TratadorDeErros.java
-│   │   │   │   └── DadosErroValidacao.java
-│   │   │   └── ClyvoPredictApplication.java
-│   │   │
-│   │   └── resources/
-│   │       └── application.properties
-│   │
-│   └── test/
-│       └── java/br/com/fiap/clyvo/
-│           └── ClyvoPredictApplicationTests.java
-│
-├── .gitignore
-├── mvnw / mvnw.cmd
-└── pom.xml
+```text
+https://clyvo-api-kr5f.onrender.com/api
 ```
 
+### Tutores
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | /tutores | Cadastrar tutor |
+| POST | /tutores/login | Login do tutor |
+| GET | /tutores | Listar tutores |
+| GET | /tutores/{id} | Consultar tutor |
+| PUT | /tutores/{id} | Atualizar tutor |
+| DELETE | /tutores/{id} | Excluir tutor |
+
+### Veterinários
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | /veterinarios | Cadastrar veterinário |
+| POST | /veterinarios/login | Login do veterinário |
+| GET | /veterinarios | Listar veterinários |
+| GET | /veterinarios/{id} | Consultar veterinário |
+| PUT | /veterinarios/{id} | Atualizar veterinário |
+| DELETE | /veterinarios/{id} | Excluir veterinário |
+
+### Pets
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | /pets | Cadastrar pet |
+| GET | /pets | Listar pets |
+| GET | /pets/{id} | Consultar pet |
+| PUT | /pets/{id} | Atualizar pet |
+| DELETE | /pets/{id} | Excluir pet |
+| POST | /pets/analisar-cadastro | Analisar imagem do pet |
+
+### Eventos de saúde
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | /eventos | Registrar evento |
+| GET | /eventos/pet/{petId} | Listar eventos do pet |
+| GET | /eventos/{id} | Consultar evento |
+| PUT | /eventos/{id} | Atualizar evento |
+| DELETE | /eventos/{id} | Excluir evento |
+
+**Observação:** a listagem de eventos é realizada por pet, utilizando `/eventos/pet/{petId}`.
+
 ---
 
-## ✅ Pré-requisitos
+## ⚙️ Pré-requisitos
 
-- **[Java 17+](https://adoptium.net/)** — JDK (não apenas JRE)
-- **[Maven 3.8+](https://maven.apache.org/download.cgi)** — ou use o wrapper `./mvnw` incluso
-- **Acesso ao Oracle DB** — instância local, Docker ou servidor remoto (FIAP: `oracle.fiap.com.br`)
-- **[Git](https://git-scm.com/)** — para clonar o repositório
-- **[Postman](https://www.postman.com/) ou [Insomnia](https://insomnia.rest/)** — para testar os endpoints (collection disponível em `/documentos`)
+- JDK 21
+- Git
+- Maven ou Maven Wrapper
+- Acesso ao Oracle Database
+- Credenciais de banco configuradas
+- Chaves RSA para autenticação
 
 ---
 
-## ⚙️ Configuração e Instalação
+## 🚀 Instalação e execução
 
-### 1. Clone o repositório
+### 1. Clonar o repositório
 
 ```bash
 git clone https://github.com/gabrielalandim/clyvo-predict.git
 cd clyvo-predict
 ```
 
-### 2. Configure o banco de dados
+### 2. Configurar o banco de dados
 
-Edite `src/main/resources/application.properties`:
+Defina as variáveis de ambiente:
 
-```properties
-spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
-spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-
-springdoc.swagger-ui.path=/swagger-ui.html
-springdoc.api-docs.path=/v3/api-docs
+```env
+DB_USERNAME=SEU_USUARIO_ORACLE
+DB_PASSWORD=SUA_SENHA_ORACLE
 ```
 
-Defina `DB_USERNAME` e `DB_PASSWORD` nas variáveis de ambiente da configuração de execução da sua IDE ou no terminal que iniciará o Java. Use suas credenciais reais apenas nesse ambiente, sem salvá-las no repositório.
+As credenciais devem ser configuradas no ambiente de execução e nunca publicadas no GitHub.
 
-No PowerShell, você pode informar as credenciais sem colocar a senha no histórico de comandos:
+Para limitar o número de conexões simultâneas ao Oracle compartilhado:
+
+```env
+SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=3
+```
+
+### 3. Configurar JWT RSA
+
+A aplicação utiliza arquivos de chaves RSA.
+
+```text
+src/main/resources/keys/private_key.pem
+src/main/resources/keys/public_key.pem
+```
+
+A chave privada não deve ser publicada no repositório.
+
+### 4. Executar a aplicação
+
+Linux/macOS:
+
+```bash
+./mvnw clean package
+./mvnw spring-boot:run
+```
+
+Windows:
 
 ```powershell
-$env:DB_USERNAME = Read-Host 'Usuário Oracle'
-$dbCredential = Get-Credential -UserName $env:DB_USERNAME -Message 'Informe a senha Oracle'
-$env:DB_PASSWORD = $dbCredential.GetNetworkCredential().Password
-Remove-Variable dbCredential
+.\mvnw.cmd clean package
+.\mvnw.cmd spring-boot:run
 ```
 
-Execute os comandos Maven nesse mesmo terminal. As variáveis precisam ser configuradas novamente em novos terminais. Um arquivo `.env` não é carregado automaticamente por esta configuração do Spring Boot.
+API local:
 
-### 3. Instale as dependências
+```text
+http://localhost:8080/api
+```
 
-```bash
-./mvnw clean install -DskipTests
+Swagger local:
+
+```text
+http://localhost:8080/swagger-ui.html
 ```
 
 ---
 
-## ▶️ Executando a Aplicação
+## 🗄️ Flyway
 
-```bash
-# Modo desenvolvimento
-./mvnw spring-boot:run
+O projeto utiliza Flyway para versionamento e gerenciamento das alterações do banco Oracle.
 
-# Gerar JAR e executar
-./mvnw clean package -DskipTests
-java -jar target/clyvo-predict-0.0.1-SNAPSHOT.jar
+As migrations ficam em:
+
+```text
+src/main/resources/db/migration
 ```
 
-A aplicação sobe em: **http://localhost:8080**
+O histórico de execução é armazenado na tabela:
 
-### Executando a interface mobile com Expo
+```sql
+FLYWAY_SCHEMA_HISTORY
+```
 
-O aplicativo mobile consome esta API Java e está disponível no repositório:
-**[Clyvo Predict Mobile - Sprint 3](https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3)**.
-
-**Pré-requisitos:** Node.js e npm instalados, Expo Go no celular Android ou iOS (compatível com o SDK do projeto), backend Java em execução e banco Oracle configurado e acessível.
-
-1. Mantenha o backend Java rodando na porta `8080`. No Windows, você pode iniciá-lo na pasta `clyvo-predict` com:
-
-   ```powershell
-   .\mvnw.cmd spring-boot:run
-   ```
-
-2. Em outro terminal, clone o aplicativo e instale suas dependências:
-
-   ```bash
-   git clone https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3.git
-   cd clyvo-predict-mobile-sprint3
-   npm install
-   ```
-
-3. No projeto mobile, edite `src/config/env.ts` e configure `API_HOST` com o IPv4 do computador que executa o Java. No Windows, consulte esse endereço com `ipconfig`, usando o adaptador Ethernet ou Wi-Fi da sua rede:
-
-   ```typescript
-   const API_HOST = '192.168.0.10'; // Exemplo: substitua pelo IPv4 do seu computador.
-   const API_PORT = 8080;
-   ```
-
-   Para celular físico, conecte o celular à mesma rede local do computador. Não use `localhost` no celular, pois ele aponta para o próprio aparelho. No emulador Android padrão do Android Studio, use `10.0.2.2` para acessar o backend executado no computador.
-
-4. Inicie o Expo:
-
-   ```bash
-   npx expo start
-   ```
-
-5. Abra o Expo Go no Android e escaneie o QR Code exibido no terminal. No iPhone, escaneie com a câmera. Para usar um emulador Android já iniciado, pressione `a` no terminal do Expo.
-
-6. Na aplicação, crie uma conta de tutor ou faça login com uma conta existente. Em seguida, acesse o cadastro de pets e o registro e consulta de eventos de saúde.
-
-**Cadastro com foto e IA:** esse recurso também exige o serviço Python em execução no endereço definido por `clyvo.ai.url` no backend Java (por padrão, `http://localhost:5000`). O mobile chama o Java, que encaminha a análise ao Python. Consulte as instruções do serviço de IA para configurar suas dependências e iniciá-lo antes de testar esse fluxo.
-
-**Se o app não conectar à API:** confirme o IP em `src/config/env.ts`, recarregue o aplicativo após alterá-lo e abra `http://IP_DO_COMPUTADOR:8080/swagger-ui.html` no navegador do celular. Se a página não abrir, confira se o Java está rodando, se os dispositivos estão na mesma rede e se o firewall permite o acesso à porta `8080` na rede privada. O túnel do Expo, quando utilizado, não disponibiliza automaticamente a API Java ao celular.
+A configuração JPA utiliza validação do esquema, evitando recriações automáticas das tabelas.
 
 ---
 
-## 📖 Documentação da API
+## 📱 Aplicativo mobile
 
-| Interface | URL |
-|---|---|
-| **Swagger UI** | http://localhost:8080/swagger-ui.html |
-| **OpenAPI JSON** | http://localhost:8080/v3/api-docs |
+Repositório:
 
-> A collection do Postman com todos os endpoints testados está disponível na pasta `/documentos` do repositório.
+https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3
+
+O aplicativo foi desenvolvido com React Native e Expo e oferece autenticação separada para tutores e veterinários.
+
+### Instalação
+
+```bash
+git clone https://github.com/gabrielalandim/clyvo-predict-mobile-sprint3.git
+cd clyvo-predict-mobile-sprint3
+npm install
+```
+
+Na raiz do projeto mobile, crie o arquivo `.env.local`:
+
+```env
+EXPO_PUBLIC_API_URL=https://clyvo-api-kr5f.onrender.com/api
+```
+
+Inicie o Expo:
+
+```bash
+npx expo start -c
+```
+
+Abra o aplicativo no Expo Go ou em um emulador compatível.
+
+---
+
+## 🤖 Integração com inteligência artificial
+
+O backend Java se comunica com um serviço externo de IA para auxiliar na análise de imagens relacionadas ao cadastro de pets.
+
+**Serviço hospedado:**
+
+https://clyvo-ia.onrender.com
+
+A configuração da URL da IA é realizada no backend.
+
+O aplicativo mobile envia as informações para a API Java, responsável por integrar os serviços.
+
+---
+
+## 📖 Documentação Swagger
+
+**Swagger online:**
+
+https://clyvo-api-kr5f.onrender.com/swagger-ui/index.html
+
+**Swagger local:**
+
+http://localhost:8080/swagger-ui.html
+
+O Swagger permite consultar os endpoints, os modelos de requisição e resposta e testar as rotas da API.
 
 ---
 
 ## 🧩 Design Patterns
 
-### Strategy Pattern — `TipoEvento`
+### Arquitetura em camadas
 
-O cálculo do Health Score utiliza o padrão **Strategy** embutido no enum `TipoEvento`. Cada tipo de evento encapsula seu próprio impacto e a lógica de cálculo, eliminando condicionais espalhadas pelo código:
+Separação entre controllers, services, repositories, entidades e DTOs.
 
-```java
-public enum TipoEvento {
-    VACINA(+10), CONSULTA_ROTINA(+5), EXAME(+5),
-    DOENCA_LEVE(-15), CIRURGIA(-30), DOENCA_GRAVE(-40), ACIDENTE(-50);
+### Strategy — TipoEvento
 
-    private final int impactoScore;
+Os tipos de evento encapsulam impactos utilizados no cálculo do Health Score.
 
-    public int calcularNovoScore(int scoreAtual) {
-        int novoScore = scoreAtual + this.impactoScore;
-        return Math.max(0, Math.min(100, novoScore));
-    }
-}
-```
+### Cache Pattern
 
-### Cache Pattern — `PetService`
+O Spring Cache permite otimizar consultas de listagem, com invalidação nas operações de alteração dos dados.
 
-A listagem de pets utiliza `@Cacheable` para evitar consultas desnecessárias ao banco. O cache é invalidado automaticamente a cada cadastro, atualização ou remoção via `@CacheEvict`.
+### Repository Pattern
+
+O Spring Data JPA abstrai as operações de persistência no Oracle Database.
 
 ---
 
 ## 🧪 Testes
 
-```bash
-# Executar todos os testes
-./mvnw test
+Execute os testes automatizados com:
 
-# Com relatório
-./mvnw verify
+```bash
+./mvnw test
 ```
 
-Os relatórios ficam em `target/surefire-reports/`.
+Os relatórios são gerados em:
 
-A collection do Postman com os testes de todos os endpoints está disponível em `/documentos/clyvo-predict-collection.json`.
+```text
+target/surefire-reports/
+```
+
+Também foram realizados testes manuais no Postman para:
+
+- Cadastro e autenticação de tutores
+- Cadastro e autenticação de veterinários
+- CRUD de pets
+- CRUD de eventos de saúde
+- Validação de permissões
+- Rejeição de requisições não autorizadas
+- Validação de tokens de contas excluídas
 
 ---
 
-## 👥 Time
+## 👥 Equipe
 
-Desenvolvido por estudantes da **FIAP** — Challenge 2026 × **Clyvo**.
+Desenvolvido por estudantes da **FIAP — Challenge 2026**.
 
 | Nome | RM |
 |---|---|
@@ -407,8 +503,12 @@ Desenvolvido por estudantes da **FIAP** — Challenge 2026 × **Clyvo**.
 
 ---
 
-<div align="center">
+## 🎥 Apresentação final
 
-Feito com ☕ e ❤️ por estudantes da **FIAP** · Challenge 2026 × **Clyvo**
+**Vídeo demonstrativo — Sprint 4:**
 
-</div>
+https://youtu.be/WREPnKKYxP
+
+---
+
+**Desenvolvido com ☕ e ❤️ pela equipe Clyvo Predict — FIAP 2026.**
